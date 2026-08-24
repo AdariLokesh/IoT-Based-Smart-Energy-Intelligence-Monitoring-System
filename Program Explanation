@@ -1,0 +1,185 @@
+1. Simulation — wokwi/sketch.ino
+
+Includes and pins
+
+
+
+
+
+WiFi.h + WebServer.h — access point and HTTP.
+
+
+
+Wire.h + Adafruit OLED — local display.
+
+
+
+GPIO 34 / 35 — solar and wind pots (0–4095 ADC → watts).
+
+
+
+GPIO 33 / 32 — LDR and gas.
+
+
+
+GPIO 25 / 26 — lamp and purifier LEDs (active HIGH in Wokwi).
+
+Constants
+
+
+
+
+
+SOLAR_W_MAX = 50, WIND_W_MAX = 25 — nameplate of the BOM.
+
+
+
+BATT_WH = 230.4 — 12.8 V × 18 Ah.
+
+
+
+LAMP_W = 20, PURIFIER_W = 25, ELECTRONICS_W = 2.
+
+
+
+htmlPage() and /data
+
+The browser UI is a string built on the ESP32 (no extra server). /data is JSON for the Python logger.
+
+setup()
+
+
+
+
+
+Relays/LEDs off.
+
+
+
+ADC 12-bit.
+
+
+
+OLED init on SDA 21 / SCL 22.
+
+
+
+WiFi.softAP("SmartPole-AP", "12345678").
+
+
+
+Routes / and /data.
+
+
+
+loop() (the energy model)
+
+
+
+
+
+Read four analog channels.
+
+
+
+solarW = (adc/4095)*50, same for wind × 25.
+
+
+
+genW = solarW + windW.
+
+
+
+Night if LDR ADC > 2200; dirty air if gas > 1800.
+
+
+
+If SOC < 15%, force both loads off.
+
+
+
+loadW = electronics + lamps + purifier.
+
+
+
+soc += (genW - loadW) * dtHours / 230.4 * 100.
+
+
+
+Clamp SOC 0–100%.
+
+
+
+Refresh OLED and Serial about 2.5 times per second.
+
+
+
+server.handleClient() so the phone page stays alive.
+
+
+
+
+
+2. Hardware — firmware/hardware/smart_energy_monitor/
+
+
+
+config.h
+
+All pins and ratings. Change relay polarity with RELAY_ACTIVE_LOW.
+
+samplePower()
+
+
+
+
+
+Battery voltage from a 10 kΩ / 3.3 kΩ divider on GPIO 35.
+
+
+
+Current from ACS712-30A on GPIO 34 through a 1:1 divider.
+
+
+
+P = V × I. If the divider is unplugged (V < 8), assume 12.8 V for USB tests.
+
+
+
+decideLoads()
+
+Same LDR / gas / SOC cutoff as Wokwi, but GPIO drives a 5 V relay (usually active LOW).
+
+integrateSoc()
+
+Blends measured watts with known lamp/purifier ratings. If battery > 13.2 V, treat the pack as charging and split generation 67% solar / 33% wind (highway pole: solar dominates). For a lab report, say this is an estimator until you add a second current sensor on PV.
+
+
+
+
+
+3. Python logger — software/dashboard/energy_logger.py
+
+Joins the same JSON /data and writes data/energy_log.csv. No pip packages required (stdlib only).
+
+
+
+
+
+4. JSON contract
+
+{
+  "solar_w": 12.5,
+  "wind_w": 3.0,
+  "gen_w": 15.5,
+  "load_w": 22.0,
+  "net_w": -6.5,
+  "batt_v": 12.9,
+  "load_a": 1.7,
+  "soc": 68.2,
+  "lamps": true,
+  "purifier": false,
+  "uptime_s": 120
+}
+
+Wokwi JSON omits batt_v, load_a, net_w, uptime_s (older payload). The logger still records whatever keys exist.

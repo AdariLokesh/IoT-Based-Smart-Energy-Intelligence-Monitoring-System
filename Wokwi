@@ -1,0 +1,161 @@
+Diagram (JSON)
+{
+  "version": 1,
+  "author": "Solar-Wind Smart Median Pole",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 80,
+      "left": 200,
+      "attrs": {}
+    },
+    {
+      "type": "board-ssd1306",
+      "id": "oled1",
+      "top": 70,
+      "left": -20,
+      "attrs": { "i2cAddress": "0x3c" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot_solar",
+      "top": 280,
+      "left": -110,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot_wind",
+      "top": 280,
+      "left": 40,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr1",
+      "top": -40,
+      "left": 430,
+      "attrs": { "lux": "800" }
+    },
+    {
+      "type": "wokwi-gas-sensor",
+      "id": "gas1",
+      "top": 80,
+      "left": 450,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "lamp1",
+      "top": -90,
+      "left": 230,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "lamp2",
+      "top": -90,
+      "left": 280,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "pur1",
+      "top": -90,
+      "left": 330,
+      "attrs": { "color": "cyan" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -30,
+      "left": 234,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": -30,
+      "left": 284,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": -30,
+      "left": 334,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t1",
+      "top": 250,
+      "left": -120,
+      "attrs": { "text": "SOLAR 0-50W" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t2",
+      "top": 250,
+      "left": 30,
+      "attrs": { "text": "WIND 0-25W" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t3",
+      "top": -110,
+      "left": 210,
+      "attrs": { "text": "LAMPS" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t4",
+      "top": -110,
+      "left": 320,
+      "attrs": { "text": "PURIFIER" }
+    }
+  ],
+  "connections": [
+    ["esp:TX", "$serialMonitor:RX", "", []],
+    ["esp:RX", "$serialMonitor:TX", "", []],
+
+    ["oled1:GND", "esp:GND.1", "black", ["v-10", "h20"]],
+    ["oled1:VCC", "esp:3V3", "red", ["v-20", "h30"]],
+    ["oled1:SDA", "esp:21", "gold", ["v20", "h80"]],
+    ["oled1:SCL", "esp:22", "green", ["v30", "h70"]],
+
+    ["pot_solar:GND", "esp:GND.2", "black", ["v20", "h120"]],
+    ["pot_solar:VCC", "esp:3V3", "red", ["v10", "h140"]],
+    ["pot_solar:SIG", "esp:34", "orange", ["v40", "h160"]],
+
+    ["pot_wind:GND", "esp:GND.2", "black", ["v30", "h80"]],
+    ["pot_wind:VCC", "esp:3V3", "red", ["v20", "h90"]],
+    ["pot_wind:SIG", "esp:35", "orange", ["v50", "h100"]],
+
+    ["ldr1:VCC", "esp:3V3", "red", ["h-40"]],
+    ["ldr1:GND", "esp:GND.3", "black", ["h-50"]],
+    ["ldr1:AO", "esp:33", "purple", ["h-60", "v80"]],
+
+    ["gas1:VCC", "esp:3V3", "red", ["h-80"]],
+    ["gas1:GND", "esp:GND.3", "black", ["h-90"]],
+    ["gas1:AOUT", "esp:32", "purple", ["h-70", "v40"]],
+
+    ["lamp1:A", "r1:2", "gold", []],
+    ["r1:1", "esp:25", "gold", ["v20", "h-20"]],
+    ["lamp1:C", "esp:GND.1", "black", ["v10", "h-40"]],
+
+    ["lamp2:A", "r2:2", "gold", []],
+    ["r2:1", "esp:25", "gold", ["v30", "h-40"]],
+    ["lamp2:C", "esp:GND.1", "black", ["v20", "h-60"]],
+
+    ["pur1:A", "r3:2", "cyan", []],
+    ["r3:1", "esp:26", "cyan", ["v40", "h-50"]],
+    ["pur1:C", "esp:GND.1", "black", ["v30", "h-80"]]
+  ],
+  "dependencies": {}
+}

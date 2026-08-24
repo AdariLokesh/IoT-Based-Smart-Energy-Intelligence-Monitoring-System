@@ -1,0 +1,828 @@
+Wiring — every connection
+
+Work with the panel covered, fuses out, and USB unplugged from the ESP32 until 5 V is verified.
+
+Color code: red = +, black = −, yellow = SDA, green = SCL, orange = analog, white = relay IN.
+
+Step 0 — Common ground
+
+Join these negatives together on one ground bus:
+
+
+
+
+
+Battery −
+
+
+
+Solar controller BAT−
+
+
+
+XL6009 OUT− and IN−
+
+
+
+LM2596 IN− and OUT−
+
+
+
+ESP32 GND
+
+
+
+Relay GND
+
+
+
+All sensor GND
+
+
+
+LED lamp −
+
+
+
+Inverter − (if used)
+
+If grounds are split, meters and the ESP32 ADC will read nonsense and you can damage boards.
+
+
+
+Step 1 — Battery and main fuse
+
+
+
+
+
+Battery + → 20 A fuse holder → solar controller BAT+.
+
+
+
+Battery − → solar controller BAT−.
+
+
+
+Leave the fuse out.
+
+LiFePO4 pack already includes a BMS. Do not add XH‑M601 on this pack.
+
+
+
+
+
+Step 2 — Solar panel to 30 A controller
+
+
+
+
+
+Panel + → controller PV+.
+
+
+
+Panel − → controller PV−.
+
+
+
+Optional: insert one dual voltmeter/ammeter in the PV+ line (meter P+ toward panel, P− toward controller) so you can see solar amps.
+
+Controller load terminals (LOAD+/LOAD−): you may power the lamps from here or from the battery via the relay. For ESP32 control, use battery + fuse + relay, not the controller LOAD output.
+
+
+
+
+
+Step 3 — Wind (Savonius) to battery
+
+
+
+
+
+Turbine/rectifier + → Schottky anode.
+
+
+
+Schottky cathode → XL6009 IN+.
+
+
+
+Turbine − → XL6009 IN− (ground).
+
+
+
+XL6009 OUT+ (preset 14.4 V) → second Schottky anode.
+
+
+
+Schottky cathode → battery + (after the 20 A fuse, same node as BAT+).
+
+
+
+XL6009 OUT− → ground bus.
+
+Set 14.4 V on a bench PSU before the turbine is connected.
+
+
+
+
+
+Step 4 — 5 V electronics rail (LM2596S)
+
+
+
+
+
+Battery + (after 20 A fuse) → 5 A fuse → LM2596 IN+.
+
+
+
+LM2596 IN− → ground.
+
+
+
+Adjust LM2596 OUT+ to 5.00 V with a DMM (no ESP32 yet).
+
+
+
+LM2596 OUT− → ground.
+
+
+
+Optional LM2596-with-display: parallel on the same 5 V to show the rail.
+
+If you also have USB plugged into the ESP32, do not feed 5 V into VIN at the same time.
+
+
+
+
+
+Step 5 — ESP32 power
+
+
+
+
+
+
+
+ESP32 pin
+
+
+
+Goes to
+
+
+
+
+
+VIN (or 5V pin, not 3V3)
+
+
+
+LM2596 OUT+ 5.00 V
+
+
+
+
+
+GND
+
+
+
+Ground bus
+
+
+
+
+
+EN / BOOT
+
+
+
+Leave default
+
+3.3 V for OLED and INA219 comes from the ESP32 3V3 pin, not from 5 V.
+
+
+
+
+
+Step 6 — I2C OLED + INA219 (shared bus)
+
+Both devices share GPIO21 / GPIO22.
+
+
+
+
+
+
+
+Module pin
+
+
+
+ESP32
+
+
+
+
+
+OLED VCC
+
+
+
+3V3
+
+
+
+
+
+OLED GND
+
+
+
+GND
+
+
+
+
+
+OLED SDA
+
+
+
+GPIO 21
+
+
+
+
+
+OLED SCL
+
+
+
+GPIO 22
+
+
+
+
+
+INA219 VCC
+
+
+
+3V3
+
+
+
+
+
+INA219 GND
+
+
+
+GND
+
+
+
+
+
+INA219 SDA
+
+
+
+GPIO 21
+
+
+
+
+
+INA219 SCL
+
+
+
+GPIO 22
+
+INA219 in the lamp 12 V path (only if lamp current stays under ~3 A):
+
+
+
+
+
+Battery + → INA219 VIN+
+
+
+
+INA219 VIN− → relay CH1 COM
+
+
+
+If lamps need more than 3 A, do not use INA219 there — use ACS712 instead.
+
+
+
+
+
+Step 7 — ACS712 30 A (battery or total load)
+
+Put the ACS712 in series with the high-current positive you want to measure (usually battery + to the load fuse).
+
+
+
+
+
+
+
+ACS712
+
+
+
+Connection
+
+
+
+
+
+VCC
+
+
+
+5 V (LM2596 out)
+
+
+
+
+
+GND
+
+
+
+GND
+
+
+
+
+
+IP+
+
+
+
+coming from battery +
+
+
+
+
+
+IP−
+
+
+
+going to loads
+
+
+
+
+
+OUT
+
+
+
+10 kΩ to GPIO 34, and 10 kΩ from GPIO 34 to GND (divider). ESP32 ADC max is 3.3 V; ACS712 OUT is ~2.5 V at 0 A on 5 V supply so the divider is extra safety.
+
+Zero-current voltage is about 2.5 V. Sensitivity for 30 A module is 66 mV/A.
+
+
+
+
+
+Step 8 — LDR (night detection)
+
+
+
+
+
+
+
+LDR module
+
+
+
+ESP32
+
+
+
+
+
+VCC
+
+
+
+3V3 or 5 V (match your board)
+
+
+
+
+
+GND
+
+
+
+GND
+
+
+
+
+
+AO
+
+
+
+GPIO 33
+
+
+
+
+
+DO
+
+
+
+unused (or GPIO 27 if you want a digital night flag)
+
+Mount the LDR so headlights do not fool it; a small hood facing the sky works.
+
+
+
+
+
+Step 9 — Two-channel 5 V relay
+
+
+
+
+
+
+
+Relay pin
+
+
+
+Connection
+
+
+
+
+
+VCC
+
+
+
+5 V
+
+
+
+
+
+GND
+
+
+
+GND
+
+
+
+
+
+IN1
+
+
+
+GPIO 25 (lamps) — active LOW on most opto boards
+
+
+
+
+
+IN2
+
+
+
+GPIO 26 (purifier)
+
+
+
+
+
+JD-VCC
+
+
+
+If the board has a JD-VCC jumper: leave jumper on for a single 5 V supply
+
+Channel 1 (lamps), 12 V DC only:
+
+
+
+
+
+Battery + → 10 A fuse → relay COM1
+
+
+
+Relay NO1 → both 12 V LED bulbs +
+
+
+
+Bulbs − → ground
+
+Channel 2 (purifier):
+
+
+
+
+
+12 V purifier/fan: same pattern as lamps on COM2 / NO2.
+
+
+
+AC purifier: relay CH2 switches inverter DC input + (battery + → fuse → COM2 → NO2 → inverter +). Inverter AC out → purifier. Keep AC cables away from ESP32.
+
+Most 5 V relay modules are active LOW: GPIO LOW = ON.
+
+
+
+
+
+Step 10 — Dual LED volt/amp meters
+
+Meter 1 (solar): shunt in PV+, thin sense wires per the printed silk (usually P+ / P− for current, V+ / V− for voltage).
+
+Meter 2 (battery/load): shunt in the 10 A lamp feed.
+
+These meters are display only. The app uses ACS712 + software.
+
+
+
+
+
+Step 11 — Waterproof voltage meter (optional)
+
+Red to battery +, black to battery −. It is only a voltmeter.
+
+
+
+
+
+Step 12 — Breadboards
+
+Use GL‑12 for 5 V / 3.3 V / GND rails and jumper the ESP32 headers. Keep all 12 V on screw terminals, not on the solderless breadboard.
+
+
+
+
+
+ESP32 pin map (firmware = Wokwi sketch)
+
+
+
+
+
+
+
+GPIO
+
+
+
+Function
+
+
+
+
+
+21
+
+
+
+I2C SDA (OLED, INA219)
+
+
+
+
+
+22
+
+
+
+I2C SCL
+
+
+
+
+
+34
+
+
+
+ACS712 analog (input only)
+
+
+
+
+
+35
+
+
+
+Spare analog / extra voltage divider for battery
+
+
+
+
+
+32
+
+
+
+Not used on hardware (Wokwi: wind pot)
+
+
+
+
+
+33
+
+
+
+LDR AO
+
+
+
+
+
+25
+
+
+
+Relay IN1 lamps
+
+
+
+
+
+26
+
+
+
+Relay IN2 purifier
+
+
+
+
+
+3V3
+
+
+
+OLED, INA219
+
+
+
+
+
+VIN
+
+
+
+5 V from LM2596
+
+
+
+
+
+GND
+
+
+
+Common
+
+On real hardware, solar/wind watts come from ACS712 × battery volts (or INA219). In Wokwi, two pots stand in for those sensors.
+
+
+
+
+
+Power-up checklist
+
+
+
+
+
+Fuses out. DMM continuity: no 12 V short to GND.
+
+
+
+LM2596 out = 5.00 V.
+
+
+
+Insert 5 A fuse. ESP32 boots, OLED shows splash.
+
+
+
+Insert 20 A fuse. Controller shows battery voltage.
+
+
+
+Uncover panel at noon; solar amps rise.
+
+
+
+Spin turbine by hand; XL6009 out stays ~14.4 V; diode is warm, not hot.
+
+
+
+Cover LDR → lamps click on.
+
+
+
+Phone → SmartPole-AP → http://192.168.4.1
+
+
+
+
+
+Faults
+
+
+
+
+
+
+
+Symptom
+
+
+
+Likely cause
+
+
+
+
+
+ESP32 brown-out
+
+
+
+5 V sag; heatsink LM2596, thicker wire
+
+
+
+
+
+OLED blank
+
+
+
+SDA/SCL swapped; address 0x3C vs 0x3D
+
+
+
+
+
+Relay always on
+
+
+
+Active LOW vs HIGH; invert in code
+
+
+
+
+
+INA219 reads 0
+
+
+
+VIN+ / VIN− not in series; current > 3.2 A saturates
+
+
+
+
+
+Battery not charging from wind
+
+
+
+XL6009 below battery voltage; missing diode; turbine open
+
+
+
+
+
+Smell / heat on inverter
+
+
+
+Purifier too large; stop and use 12 V fan
+

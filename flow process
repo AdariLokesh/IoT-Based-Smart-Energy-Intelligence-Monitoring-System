@@ -1,0 +1,16 @@
+50 W panel ──► 30 A LiFePO4 controller ──┐
+Savonius ──► diode + XL6009 14.4 V ─────┼──► 12.8 V 18 Ah battery
+                                        │
+                    ACS712 + V divider ─┤
+                    LDR + gas sensor ───┤
+                                        ▼
+                              ESP32 + OLED
+                                        │
+                    relay CH1 lamps  12 V LED
+                    relay CH2 purifier (prefer 12 V fan)
+                                        │
+                              Wi-Fi AP + /data JSON
+                                        │
+                         phone browser or PC CSV logger
+
+

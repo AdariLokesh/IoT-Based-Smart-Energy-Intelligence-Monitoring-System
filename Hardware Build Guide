@@ -1,0 +1,651 @@
+Hardware build guide
+
+This is the physical prototype. Complete Wokwi first (docs/03-WOKWI-SIMULATION.md) so the firmware is proven.
+
+1. What each module is for
+
+
+
+
+
+
+
+Your part
+
+
+
+Role in this project
+
+
+
+Use it?
+
+
+
+
+
+WAAREE 50 W panel
+
+
+
+Daytime generation
+
+
+
+Yes
+
+
+
+
+
+Savonius wind turbine (you named “Saviouns”)
+
+
+
+Extra generation from vehicle wind
+
+
+
+Yes
+
+
+
+
+
+30 A LCD solar controller
+
+
+
+Main charger: panel → battery
+
+
+
+Yes
+
+
+
+
+
+EPLUS 12 V 18 Ah LiFePO4 + BMS
+
+
+
+Energy storage
+
+
+
+Yes
+
+
+
+
+
+XL6009 boost
+
+
+
+Raise wind voltage to ~14.4 V charge
+
+
+
+Yes
+
+
+
+
+
+LM2596S (no display)
+
+
+
+Battery 12 V → 5.00 V for electronics
+
+
+
+Yes
+
+
+
+
+
+LM2596 with display
+
+
+
+Optional second meter on the 5 V rail
+
+
+
+Optional
+
+
+
+
+
+INA219
+
+
+
+Accurate low-current power on the 5 V / lamp sense path
+
+
+
+Yes (keep current < 3 A)
+
+
+
+
+
+ACS712 30 A
+
+
+
+Battery or combined load current
+
+
+
+Yes
+
+
+
+
+
+Dual V/A meters (qty 2)
+
+
+
+Human-readable solar and battery meters on the pole
+
+
+
+Yes
+
+
+
+
+
+Waterproof 8–84 V meter
+
+
+
+Outdoor battery voltage
+
+
+
+Optional
+
+
+
+
+
+Digital LDR module
+
+
+
+Auto lamps at night
+
+
+
+Yes
+
+
+
+
+
+0.96" I2C OLED
+
+
+
+Local live watts
+
+
+
+Yes
+
+
+
+
+
+ESP32 DevKit V1
+
+
+
+Brain + Wi‑Fi app
+
+
+
+Yes
+
+
+
+
+
+2-channel 5 V relay
+
+
+
+Switch lamps and purifier
+
+
+
+Yes
+
+
+
+
+
+12 V 84-SMD LED bulbs
+
+
+
+Street lamps
+
+
+
+Yes (2–4 pcs)
+
+
+
+
+
+200 W 12 V→AC inverter
+
+
+
+Only if the purifier is a 230 V AC unit
+
+
+
+Yes, with care
+
+
+
+
+
+Proton TM air purifier
+
+
+
+Load
+
+
+
+Prefer a 12 V purifier/fan for the first prototype
+
+
+
+
+
+SIM900A GSM
+
+
+
+SMS alerts when Wi‑Fi is absent
+
+
+
+Optional, later
+
+
+
+
+
+XH‑M601
+
+
+
+Lead‑acid charge cutoff
+
+
+
+Do not use with LiFePO4
+
+
+
+
+
+GL‑12 + mini breadboard
+
+
+
+Prototype wiring
+
+
+
+Yes
+
+
+
+
+
+170-pt mini breadboard
+
+
+
+Extra 5 V rail / sensors
+
+
+
+Yes
+
+
+
+2. Extra parts you still need (not in your list)
+
+Buy these before you energize anything:
+
+
+
+
+
+20 A ANL or blade fuse on battery positive (main)
+
+
+
+5 A fuse on the LM2596 input
+
+
+
+10 A fuse on the lamp circuit
+
+
+
+Schottky diodes 10 A / 45 V (two pieces) — one on wind, one if you parallel sources
+
+
+
+MC4 solar connectors or a 16 A DC breaker on the panel
+
+
+
+2.5 mm² (solar/battery) and 0.5 mm² (signal) wire, red/black
+
+
+
+Common ground bus (brass strip or breadboard rails)
+
+
+
+Heat-shrink, ferrules, and a heatsink on LM2596 and XL6009
+
+
+
+If using ACS712 with ESP32: two 10 kΩ resistors (voltage divider on OUT)
+
+
+
+3. Mechanical layout on the pole (top → bottom)
+
+
+
+
+
+Top: 50 W panel, tilted ~15–25° toward the equator (India: face south).
+
+
+
+Upper canopy: 12 V LED lamps facing both carriageways; optional air-purifier housing with weather cover and insect mesh.
+
+
+
+Side of shaft (1–1.5 m above median, in vehicle wake): Savonius rotor. Keep blades outside the vehicle envelope and behind crash barrier rules for a real highway; this prototype is for a lab/campus road.
+
+
+
+Locked IP65 box at chest height: battery, 30 A controller, buck/boost, ESP32, relays, fuses.
+
+
+
+Ventilation: LiFePO4 is safer than lead‑acid but still needs airflow and no standing water.
+
+
+
+4. Power numbers for this BOM (see Excel too)
+
+
+
+
+
+
+
+Item
+
+
+
+Typical value
+
+
+
+
+
+Panel
+
+
+
+50 W, Vmp ≈ 18 V, Imp ≈ 2.8 A
+
+
+
+
+
+Battery
+
+
+
+12.8 V × 18 Ah ≈ 230 Wh
+
+
+
+
+
+Two 12 V LED bulbs
+
+
+
+~8–12 W each → 16–24 W
+
+
+
+
+
+Small AC purifier
+
+
+
+often 25–45 W + inverter loss (~20%)
+
+
+
+
+
+ESP32 + sensors
+
+
+
+~1.5–2.5 W
+
+
+
+
+
+Useful solar/day (India, 5 peak-sun-hours, 70% system)
+
+
+
+~175 Wh
+
+
+
+
+
+Night lamps 11 h × 20 W
+
+
+
+220 Wh — already tight
+
+
+
+
+
+Purifier 8 h × 30 W
+
+
+
+240 Wh — too much for 18 Ah
+
+Design rule for this battery: lamps on a photocell at night; purifier 15 minutes per hour or replace with a 12 V 5–8 W fan + HEPA for the demo.
+
+5. Build order (safety)
+
+
+
+
+
+Mount pole, panel, turbine, and IP65 box. No electrical connections yet.
+
+
+
+Fit fuses holders empty.
+
+
+
+Wire battery negative as the common ground star.
+
+
+
+Connect battery to the 30 A controller BAT+/BAT− first. Set battery type to LiFePO4 if the menu has it (otherwise use a controller that supports LFP).
+
+
+
+Confirm controller shows ~12.8–13.4 V.
+
+
+
+Connect solar PV+/PV− last. Cover the panel until the connector is seated.
+
+
+
+Set XL6009 on a bench supply to 14.4 V output before attaching the turbine. Then add the Schottky diode toward battery +.
+
+
+
+Set LM2596S output to 5.00 V with a multimeter before plugging in the ESP32.
+
+
+
+Wire sensors and relays on the 5 V / 3.3 V side.
+
+
+
+Insert fuses, one at a time, starting with the 5 A electronics fuse.
+
+
+
+Flash ESP32 firmware (same logic as Wokwi wokwi/sketch.ino).
+
+
+
+Only then connect lamps and (if used) inverter + purifier.
+
+
+
+6. Wind turbine electrical note
+
+Most small Savonius kits use a DC generator or a 3-phase hub + rectifier.
+
+
+
+
+
+If AC 3-phase: use the kit bridge rectifier, then XL6009.
+
+
+
+If already DC: diode → XL6009 → battery.
+
+
+
+Never feed raw turbine voltage into the ESP32.
+
+
+
+A highway-wake Savonius on a short pole often produces only a few watts. Treat solar as the main source for the demo.
+
+
+
+7. Air purifier
+
+
+
+
+
+
+
+Option
+
+
+
+Wiring
+
+
+
+Recommendation
+
+
+
+
+
+A. 12 V DC fan + filter
+
+
+
+Relay CH2 switches 12 V
+
+
+
+Best for prototype
+
+
+
+
+
+B. 230 V Proton-style unit
+
+
+
+Battery → inverter → relay on inverter DC input (not mixed AC/ESP32)
+
+
+
+Lab only, insulated box, earth the inverter if it has an earth pin
+
+Never put 230 V on the breadboard.
+
+8. SIM900A (optional, skip for Wokwi)
+
+
+
+
+
+5 V / 2 A supply of its own (not from ESP32 5 V pin).
+
+
+
+GSM TX → ESP32 RX (GPIO16) through a 5 V to 3.3 V divider.
+
+
+
+ESP32 TX (GPIO17) → GSM RX.
+
+
+
+Common GND. Antenna connected before power-up.
+
+
+
+9. App (real hardware)
+
+The firmware creates Wi‑Fi SmartPole-AP / password 12345678. Open http://192.168.4.1 for live solar W, wind W, load W, battery %, lamp and purifier state.
+
+On a real highway you would later add a router or SIM900 SMS; the prototype AP is enough to prove the idea.

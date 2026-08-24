@@ -4,7 +4,6 @@ Highway median pole that harvests 50 W solar and Savonius wind (vehicle wake), s
 
 Hardware build · Wiring · Wokwi sim · Code explained · GitHub upload
 
-Why this repository
 
 
 
@@ -12,11 +11,12 @@ Why this repository
 
 
 
-Need
 
 
 
-Where it lives
+
+
+
 
 
 
